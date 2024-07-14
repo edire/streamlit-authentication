@@ -25,6 +25,10 @@ def __ensure_cookie(cookie_name, value=None):
     return is_good
 
 
+def __set_cookie(cookie_name, value, key):
+    st.session_state['cookie_manager'].set(cookie_name, value, key, secure=True, same_site=None)
+
+
 def __hasher(input_string, secret_string=os.getenv('SECRET_STRING')):
     input_string = input_string + secret_string
     sha256_hash = hashlib.sha256()
@@ -35,9 +39,9 @@ def __hasher(input_string, secret_string=os.getenv('SECRET_STRING')):
 
 def __check_authorized_user(email, AUTHORIZED_USERS):
     if email in AUTHORIZED_USERS or '*@' + email.split('@')[1] in AUTHORIZED_USERS:
-        st.session_state['cookie_manager'].set('streamlit_auth_cookie', True, key='set_streamlit_auth_cookie')
-        st.session_state['cookie_manager'].set('email', email, key='set_email')
-        st.session_state['cookie_manager'].set('email_secret', __hasher(st.session_state.get('email')), key='set_email_secret')
+        __set_cookie('streamlit_auth_cookie', True, key='set_streamlit_auth_cookie')
+        __set_cookie('email', email, key='set_email')
+        __set_cookie('email_secret', __hasher(st.session_state.get('email')), key='set_email_secret')
     else:
         st.write('Unauthorized user, please request access.')
 
