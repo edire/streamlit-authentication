@@ -14,7 +14,7 @@ from cryptography.fernet import Fernet
 #%% Miscellaneous Functions
 
 def __set_session_var(name, var):
-    sleep(0.1)
+    sleep(1)
     st.session_state[name] = var
 
 
