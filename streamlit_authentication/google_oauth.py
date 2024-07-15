@@ -8,12 +8,13 @@ from googleapiclient.discovery import build
 import hashlib
 import functools
 from time import sleep
+from cryptography.fernet import Fernet
 
 
 #%% Miscellaneous Functions
 
 def __set_session_var(name, var):
-    sleep(0.25)
+    sleep(0.1)
     st.session_state[name] = var
 
 
@@ -37,13 +38,25 @@ def __hasher(input_string, secret_string=os.getenv('SECRET_STRING')):
     return hashed_string
 
 
-def __check_authorized_user(email, AUTHORIZED_USERS):
+def __check_authorized_user(email_encrypted, AUTHORIZED_USERS):
+    email = __symmetric_decrypt(email_encrypted)
     if email in AUTHORIZED_USERS or '*@' + email.split('@')[1] in AUTHORIZED_USERS:
         __set_cookie('streamlit_auth_cookie', True, key='set_streamlit_auth_cookie')
-        __set_cookie('email', email, key='set_email')
-        __set_cookie('email_secret', __hasher(st.session_state.get('email')), key='set_email_secret')
+        __set_cookie('email_encrypted', email_encrypted, key='set_email')
+        __set_cookie('email_secret', __hasher(email), key='set_email_secret')
     else:
         st.write('Unauthorized user, please request access.')
+
+
+def __symmetric_encrypt(input_string, secret_string=os.getenv('FERNET_KEY')):
+    cipher_suite = Fernet(secret_string)
+    encrypted_value = cipher_suite.encrypt(input_string.encode()).decode()
+    return encrypted_value
+
+def __symmetric_decrypt(input_string, secret_string=os.getenv('FERNET_KEY')):
+    cipher_suite = Fernet(secret_string)
+    decrypted_value = cipher_suite.decrypt(input_string.encode()).decode()
+    return decrypted_value
 
 
 #%% Google OAuth Functions
@@ -70,7 +83,8 @@ def __callback(flow):
 
     user_info_service = build('oauth2', 'v2', credentials=credentials)
     user_info = user_info_service.userinfo().get().execute()
-    __set_session_var('email', user_info.get('email'))
+    email_encrypted = __symmetric_encrypt(user_info.get('email'))
+    __set_session_var('email_encrypted', email_encrypted)
 
 
 #%% Create Wrapper
@@ -95,18 +109,19 @@ def authenticate(func):
         if 'id_token' not in st.session_state:
             __set_session_var('id_token', None)
 
-        if 'email' not in st.session_state:
-            __set_session_var('email', None)
-
-        sleep(5)
+        if 'email_encrypted' not in st.session_state:
+            __set_session_var('email_encrypted', None)
 
         if st.session_state['is_authorized'] == False:
             __set_session_var('is_authorized', __ensure_cookie("streamlit_auth_cookie", True))
 
         if st.session_state['is_authorized'] == True:
-            if st.session_state['email'] == None:
-                __set_session_var('email', st.session_state['cookie_manager'].get('email'))
-            if __hasher(st.session_state.get('email')) == st.session_state['cookie_manager'].get('email_secret'):
+            if st.session_state['email_encrypted'] == None:
+                __set_session_var('email_encrypted', st.session_state['cookie_manager'].get('email_encrypted'))
+
+            email_encrypted = st.session_state.get('email_encrypted')
+            email = __symmetric_decrypt(email_encrypted)
+            if __hasher(email) == st.session_state['cookie_manager'].get('email_secret'):
                 func(*args, **kwargs)
             else:
                 st.write("Your cookies have been tampered with, please clear your cookies and try again.")
@@ -117,13 +132,13 @@ def authenticate(func):
                 scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
                 redirect_uri=REDIRECT_URI,
             )
-            if st.session_state['email'] == None and st.query_params.get("code") != None:
+            if st.session_state['email_encrypted'] == None and st.query_params.get("code") != None:
                 __callback(flow)
-            elif st.session_state['email'] == None:
+            elif st.session_state['email_encrypted'] == None:
                 __login(flow)
 
-            if st.session_state['email'] != None:
-                __check_authorized_user(st.session_state.get('email'), AUTHORIZED_USERS)
+            if st.session_state['email_encrypted'] != None:
+                __check_authorized_user(st.session_state.get('email_encrypted'), AUTHORIZED_USERS)
 
     return wrapper_decorator
 
