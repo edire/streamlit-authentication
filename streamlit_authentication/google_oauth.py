@@ -26,7 +26,7 @@ def __ensure_cookie(cookie_name, value=None):
 
 
 def __set_cookie(cookie_name, value, key):
-    st.session_state['cookie_manager'].set(cookie_name, value, key, secure=True, same_site=None)
+    st.session_state['cookie_manager'].set(cookie_name, value, key, secure=True, same_site="None")
 
 
 def __hasher(input_string, secret_string=os.getenv('SECRET_STRING')):
