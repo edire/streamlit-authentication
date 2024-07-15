@@ -98,11 +98,7 @@ def authenticate(func):
         if 'email' not in st.session_state:
             __set_session_var('email', None)
 
-        flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-            client_secrets_file = CLIENT_SECRETS_FILE,
-            scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
-            redirect_uri=REDIRECT_URI,
-        )
+        sleep(5)
 
         if st.session_state['is_authorized'] == False:
             __set_session_var('is_authorized', __ensure_cookie("streamlit_auth_cookie", True))
@@ -116,6 +112,11 @@ def authenticate(func):
                 st.write("Your cookies have been tampered with, please clear your cookies and try again.")
 
         else:
+            flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+                client_secrets_file = CLIENT_SECRETS_FILE,
+                scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
+                redirect_uri=REDIRECT_URI,
+            )
             if st.session_state['email'] == None and st.query_params.get("code") != None:
                 __callback(flow)
             elif st.session_state['email'] == None:
