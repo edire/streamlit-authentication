@@ -11,10 +11,13 @@ from time import sleep
 from cryptography.fernet import Fernet
 
 
+cookie_timing = os.getenv('COOKIE_TIMING', 0.25)
+
+
 #%% Miscellaneous Functions
 
 def __set_session_var(name, var):
-    sleep(1)
+    sleep(cookie_timing)
     st.session_state[name] = var
 
 
