@@ -11,7 +11,7 @@ from time import sleep
 from cryptography.fernet import Fernet
 
 
-cookie_timing = os.getenv('COOKIE_TIMING', 0.25)
+cookie_timing = float(os.getenv('COOKIE_TIMING', 0.25))
 
 
 #%% Miscellaneous Functions
