@@ -46,7 +46,6 @@ def __check_authorized_user(email_encrypted, AUTHORIZED_USERS):
     email = __symmetric_decrypt(email_encrypted)
     if email in AUTHORIZED_USERS or '*@' + email.split('@')[1] in AUTHORIZED_USERS:
         __set_cookie('streamlit_auth_cookie', True, key='set_streamlit_auth_cookie')
-        __set_cookie('email_encrypted', email_encrypted, key='set_email')
         __set_cookie('email_secret', __hasher(email), key='set_email_secret')
     else:
         st.write('Unauthorized user, please request access.')
@@ -89,6 +88,7 @@ def __callback(flow):
     user_info = user_info_service.userinfo().get().execute()
     email_encrypted = __symmetric_encrypt(user_info.get('email'))
     __set_session_var('email_encrypted', email_encrypted)
+    __set_cookie('email_encrypted', email_encrypted, key='set_email')
 
 
 #%% Create Wrapper
