@@ -9,6 +9,7 @@ import hashlib
 import functools
 from time import sleep
 from cryptography.fernet import Fernet
+import datetime as dt
 
 
 cookie_timing = float(os.getenv('COOKIE_TIMING', 0.25))
@@ -30,7 +31,7 @@ def __ensure_cookie(cookie_name, value=None):
 
 
 def __set_cookie(cookie_name, value, key):
-    st.session_state['cookie_manager'].set(cookie_name, value, key, secure=True, same_site="None")
+    st.session_state['cookie_manager'].set(cookie_name, value, key, secure=True, same_site="None", expires_at = dt.datetime.now() + dt.timedelta(days=30))
 
 
 def __hasher(input_string, secret_string=os.getenv('SECRET_STRING')):
