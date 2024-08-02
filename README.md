@@ -31,4 +31,5 @@ MIT License
 
 ## Updates
 
-06/24/2024 - Initial Commit.<br>
+08/02/2024 - added cryptography to install list.<br>
+06/24/2024 - Initial Commit.
