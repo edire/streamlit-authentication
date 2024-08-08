@@ -3,8 +3,8 @@
 import os
 import streamlit as st
 import functools
-import _google_oauth as ga
-import _tools
+import streamlit_authentication._google_oauth as _google_oauth
+import streamlit_authentication._tools as _tools
 from extra_streamlit_components import CookieManager
 import datetime as dt
 
@@ -32,7 +32,7 @@ def authenticate(func):
                 st.write("Your cookies have been tampered with, please clear your cookies and try again.")
         else:
             if st.query_params.get("code") != None:
-                email = ga.callback()
+                email = _google_oauth.callback()
                 AUTHORIZED_USERS = os.getenv('AUTHORIZED_USERS', '*')
                 is_authorized = _tools.check_authorized_user(email, AUTHORIZED_USERS)
                 if is_authorized:
@@ -45,7 +45,7 @@ def authenticate(func):
                 if st.session_state['rerun'] <= 2:
                     st.session_state['rerun'] += 1
                     st.rerun()
-                ga.login()
+                _google_oauth.login()
 
     return wrapper_decorator
 
