@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='streamlit-authentication',
     packages=['streamlit_authentication'],
-    version='0.1.2',
+    version='0.1.3',
     license='MIT',
     author='Eric Di Re',
     author_email='eric.dire@direanalytics.com',
