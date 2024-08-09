@@ -14,14 +14,17 @@ CLIENT_SECRETS_FILE = os.getenv('CLIENT_SECRETS_FILE')
 REDIRECT_URI = os.getenv('REDIRECT_URI', 'http://localhost:8501')
 
 
-flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-    client_secrets_file = CLIENT_SECRETS_FILE,
-    scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
-    redirect_uri=REDIRECT_URI,
-)
+def _get_flow():
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+        client_secrets_file = CLIENT_SECRETS_FILE,
+        scopes=["openid", "https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
+        redirect_uri=REDIRECT_URI,
+    )
+    return flow
 
 
 def login():
+    flow = _get_flow()
     authorization_url, state = flow.authorization_url()
     html_content = f"""
 <div style="display: flex; justify-content: "center";">
@@ -36,7 +39,8 @@ Sign in with Google
     
 
 def callback():
-    sleep(0.5)
+    sleep(3)
+    flow = _get_flow()
     auth_code = st.query_params.get("code")
     st.query_params.clear()
     flow.fetch_token(code=auth_code)
