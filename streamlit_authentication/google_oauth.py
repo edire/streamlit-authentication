@@ -42,7 +42,7 @@ def authenticate(func):
                 else:
                     st.write('Unauthorized user, please request access.')
             else:
-                if st.session_state['rerun'] <= 2:
+                if st.session_state['rerun'] <= 5:
                     st.session_state['rerun'] += 1
                     st.rerun()
                 _google_oauth.login()
